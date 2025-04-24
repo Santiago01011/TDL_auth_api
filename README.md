@@ -148,6 +148,14 @@ graph LR;
 ```json
 "Invalid credentials"
 ```
+#### Bash Command to Test login/register
+```bash
+curl -X POST https://tdl-auth-api-1.onrender.com/api/auth/login/register -H "Content-Type: application/json" -d '{
+  "email": "johndoe@email.com",
+  "username": "johndoe",
+  "password": "P@ssw0rd!"
+}'
+```
 
 ## Setup
 
