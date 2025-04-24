@@ -1,4 +1,5 @@
 HELP.md
+project.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -32,3 +33,4 @@ build/
 ### VS Code ###
 .vscode/
 .env
+docker-compose.yml

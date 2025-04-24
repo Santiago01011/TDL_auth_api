@@ -12,7 +12,7 @@
 	<artifactId>auth</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>AuthAPIwJWT</name>
-	<description>Demo project for Spring Boot</description>
+	<description>basic authentication API built with Spring Boot, designed to handle user registration and login for external applications. It uses JWT (JSON Web Tokens) for session management after successful login.</description>
 	<url/>
 	<licenses>
 		<license/>

@@ -48,22 +48,16 @@ CREATE TABLE todo.pending_users (
 
 ## Authentication Flow
 
-### 1. Registration
-
 ```mermaid
 graph LR;
-    A[Client App] -- 1. POST /api/auth/register (username, email, password) --> B(Auth API);
-    B -- 2. Validate & Hash Password --> B;
-    B -- 3. Generate Verification Code --> B;
-    B -- 4. Create PendingUser --> C[DB: pending_users];
-    B -- 5. Send Verification Email --> D[Email Service];
-    D -- 6. User Clicks Link --> E{User's Browser};
-    E -- 7. GET /api/auth/verify?code=... --> B;
-    B -- 8. Find PendingUser by Code --> C;
-    B -- 9. Create User --> F[DB: users];
-    B -- 10. Delete PendingUser --> C;
-    B -- 11. Success Response --> E;
+    A["Java Desktop App"]-->|"Initiates Auth"| B["API Serverless Functions"]
+    B<-->|"Handles All Auth Logic"| C["PostgreSQL Database"]
+    B-->|"Sends Verification Token"| D["Email Service"]
+    D-->|"User Clicks Link"| B
+    B-->|"Success/Failure Response"| A
 ```
+
+### 1. Registration
 
 1.  **Initiate Registration:** The client application sends a POST request to `/api/auth/register` with the user's desired username, email, and password.
 2.  **API Validation:** The API validates the input (e.g., checks if email/username already exists in `users` or `pending_users`).
@@ -79,19 +73,6 @@ graph LR;
 
 ### 2. Login
 
-```mermaid
-graph LR;
-    A[Client App] -- 1. POST /api/auth/login (email, password) --> B(Auth API / Spring Security);
-    B -- 2. Load User by Email --> C[DB: users];
-    B -- 3. Compare Password Hash --> B;
-    alt Authentication Success
-        B -- 4a. Generate JWT --> B;
-        B -- 5a. Return JWT --> A;
-    else Authentication Failure
-        B -- 4b. Return 401 Unauthorized --> A;
-    end
-```
-
 1.  **Initiate Login:** The client application sends a POST request to `/api/auth/login` with the user's email and password.
 2.  **Spring Security Authentication:** Spring Security intercepts the request.
     *   It uses a configured `UserDetailsService` to load the user's data (including the password hash) from the `users` table based on the provided email.
@@ -103,15 +84,70 @@ graph LR;
     *   On success, the API returns the generated JWT to the client application.
     *   On failure, the API returns the error response.
 
-### 3. Authenticated Requests
+## API Endpoints
 
-Once logged in, the client application should include the received JWT in the `Authorization` header of subsequent requests to protected API endpoints:
+*   `POST /api/auth/register`: Register a new user.
+*   `GET /api/auth/verify`: Verify a user's email address using the code from the verification email.
+*   `POST /api/auth/login`: Authenticate a user and receive a JWT.
 
+## Example Requests and Responses
+
+#### POST /api/auth/register
+- Request Body:
+```json
+{
+  "username": "johndoe",
+  "email": "john@example.com",
+  "password": "P@ssw0rd!"
+}
 ```
-Authorization: Bearer <your_jwt_token>
+- Success Response (200):
+```json
+"Registration successful. Please check your email for verification link."
+```
+- Error Response (400):
+```json
+"Email already in use"
 ```
 
-Spring Security will validate the JWT on each request to ensure the user is authenticated and authorized.
+#### GET /api/auth/verify?code={verificationCode}
+- Success Response (200):
+```json
+"Account verified successfully!"
+```
+- Error Response (400):
+```json
+"Invalid or expired verification code"
+```
+
+#### POST /api/auth/login
+- Request Body (use Email OR Username):
+```json
+{
+  "email": "john@example.com",
+  "username": "",
+  "password": "P@ssw0rd!"
+}
+```
+- Alternatively, login by username:
+```json
+{
+  "email": "",
+  "username": "johndoe",
+  "password": "P@ssw0rd!"
+}
+```
+- Success Response (200):
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR...",
+  "userId": "123e4567-e89b-12d3-a456-426614174000"
+}
+```
+- Error Response (401):
+```json
+"Invalid credentials"
+```
 
 ## Setup
 
@@ -124,7 +160,6 @@ Spring Security will validate the JWT on each request to ensure the user is auth
    spring.datasource.username=your_db_user
    spring.datasource.password=your_db_password
    spring.jpa.hibernate.ddl-auto=validate # Or update/none as needed
-   spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
    # Email Configuration
    spring.mail.host=your_smtp_host
@@ -139,11 +174,3 @@ Spring Security will validate the JWT on each request to ensure the user is auth
     ```bash
     mvn spring-boot:run
     ```
-
-## API Endpoints
-
-*   `POST /api/auth/register`: Register a new user.
-*   `GET /api/auth/verify`: Verify a user's email address using the code from the verification email.
-*   `POST /api/auth/login`: Authenticate a user and receive a JWT.
-
-*(Protected endpoints requiring JWT authentication will be added later)*

@@ -1,0 +1,8 @@
+target/
+*.log
+*.jar
+*.iml
+Dockerfile
+docker-compose.yml
+.env
+*.class

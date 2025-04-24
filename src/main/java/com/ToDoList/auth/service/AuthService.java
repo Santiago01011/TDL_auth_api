@@ -82,27 +82,27 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        String identifier = (request.getEmail() != null && !request.getEmail().isBlank())
+                ? request.getEmail()
+                : request.getUsername();
         try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
-            log.info("Authentication successful for email: {}", request.getEmail());
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(identifier, request.getPassword()));
+            log.info("Authentication successful for identifier: {}", identifier);
         } catch (AuthenticationException e) {
-            log.warn("Authentication failed for email {}: {}", request.getEmail(), e.getMessage());
-            throw new IllegalArgumentException("Invalid email or password.", e);
+            log.warn("Authentication failed for identifier {}: {}", identifier, e.getMessage());
+            throw new IllegalArgumentException("Invalid credentials.", e);
         }
 
-        var user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalStateException("User not found after successful authentication - data inconsistency?"));
+        var user = userRepository.findByEmail(identifier)
+                .or(() -> userRepository.findByUsername(identifier))
+                .orElseThrow(() -> new IllegalStateException("User not found after successful authentication."));
 
         String jwtToken = jwtService.generateToken(user);
-        log.info("JWT generated for email: {}", request.getEmail());
+        log.info("JWT generated for identifier: {}", identifier);
 
         return AuthResponse.builder()
                 .token(jwtToken)
+                .userId(user.getUserId())
                 .build();
     }
 
@@ -111,17 +111,19 @@ public class AuthService {
         String subject = "Verify Your Email Address";
         String text = "Please click the following link to verify your email address: " + verificationUrl;
 
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(toEmail);
-            message.setSubject(subject);
-            message.setText(text);
-            mailSender.send(message);
-            log.info("Verification email sent to: {}", toEmail);
-        } catch (MailException e) {
-            log.error("Failed to send verification email to {}: {}", toEmail, e.getMessage());
-            // TODO: Handle email sending failure, retry and retrive the link as text for manual verification
-        }
+        // try {
+        //     SimpleMailMessage message = new SimpleMailMessage();
+        //     message.setFrom(fromEmail);
+        //     message.setTo(toEmail);
+        //     message.setSubject(subject);
+        //     message.setText(text);
+                log.info("Verification email content: {}", text);
+        //     mailSender.send(message);
+        //     log.info("Verification email sent to: {}", toEmail);
+        // } catch (MailException e) {
+        //     log.error("Failed to send verification email to {}: {}", toEmail, e.getMessage());
+        //     // TODO: Handle email sending failure, retry and retrive the link as text for manual verification
+        // // Deactivated for now to avoid sending emails during testing
+        // }
     }
 }
