@@ -51,7 +51,7 @@ CREATE TABLE todo.pending_users (
 ```mermaid
 graph LR;
     A["Client"]-->|"Initiates Auth"| B["API auth"]
-    B<-->|"Handles All Auth Logic"| C["cLOUD Database"]
+    B<-->|"Handles All Auth Logic"| C["Cloud Database"]
     B-->|"Sends Verification Token"| D["Email Service"]
     D-->|"User Clicks Link"| B
     B-->|"Success/Failure Response"| A
