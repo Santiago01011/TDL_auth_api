@@ -43,7 +43,7 @@ public class AuthService {
     private String fromEmail;
 
     @Transactional
-    public void register(RegisterRequest request) {
+    public String register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail()) || pendingUserRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already in use.");
         }
@@ -61,6 +61,7 @@ public class AuthService {
         pendingUserRepository.save(pendingUser);
         log.info("Pending user saved for email: {}", request.getEmail());
         sendVerificationEmail(request.getEmail(), verificationCode);
+        return verificationCode;
     }
 
     @Transactional
@@ -111,19 +112,19 @@ public class AuthService {
         String subject = "Verify Your Email Address";
         String text = "Please click the following link to verify your email address: " + verificationUrl;
 
-        // try {
-        //     SimpleMailMessage message = new SimpleMailMessage();
-        //     message.setFrom(fromEmail);
-        //     message.setTo(toEmail);
-        //     message.setSubject(subject);
-        //     message.setText(text);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject(subject);
+            message.setText(text);
                 log.info("Verification email content: {}", text);
-        //     mailSender.send(message);
-        //     log.info("Verification email sent to: {}", toEmail);
-        // } catch (MailException e) {
-        //     log.error("Failed to send verification email to {}: {}", toEmail, e.getMessage());
-        //     // TODO: Handle email sending failure, retry and retrive the link as text for manual verification
-        // // Deactivated for now to avoid sending emails during testing
-        // }
+            mailSender.send(message);
+            log.info("Verification email sent to: {}", toEmail);
+        } catch (MailException e) {
+            log.error("Failed to send verification email to {}: {}", toEmail, e.getMessage());
+            // TODO: Handle email sending failure, retry and retrive the link as text for manual verification
+        // Deactivated for now to avoid sending emails during testing
+        }
     }
 }

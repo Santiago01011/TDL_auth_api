@@ -7,6 +7,7 @@ import com.ToDoList.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,14 +19,15 @@ public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
+    @Value("${application.base-url}")
+    private String baseUrl;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
-            authService.register(request);
-            log.info("Registration request successful for email: {}", request.getEmail());
-            // Consider returning 201 Created or 202 Accepted if email sending is async
-            return ResponseEntity.ok("Registration successful. Please check your email for verification link.");
+            String verification_code = authService.register(request);
+            log.info("Registration request successful for email: {}. If you did not receive an email, manually go to the verification link: {}", request.getEmail(), baseUrl + "/api/auth/verify?code=" + verification_code);
+            return ResponseEntity.ok("Registration successful. Please check your email for verification link. If you did not receive an email, manually go to the verification link: " + baseUrl + "/api/auth/verify?code=" + verification_code);
         } catch (IllegalArgumentException e) {
             log.warn("Registration failed: {}", e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
