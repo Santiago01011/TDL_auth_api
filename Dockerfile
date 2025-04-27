@@ -15,4 +15,4 @@ RUN ./mvnw dependency:go-offline
 COPY ./src /root/src
 RUN ./mvnw clean package -DskipTests
 
-ENTRYPOINT ["java","-jar","/root/target/auth-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","/root/target/auth-0.1.0.jar"]
