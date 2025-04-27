@@ -7,6 +7,7 @@ import com.ToDoList.auth.model.PendingUser;
 import com.ToDoList.auth.model.User;
 import com.ToDoList.auth.repository.PendingUserRepository;
 import com.ToDoList.auth.repository.UserRepository;
+import com.ToDoList.auth.exception.VerificationCodeExpiredException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,11 +17,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Service
@@ -64,10 +66,16 @@ public class AuthService {
         return verificationCode;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = VerificationCodeExpiredException.class)
     public void verify(String verificationCode) {
         PendingUser pendingUser = pendingUserRepository.findByVerificationCode(verificationCode)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired verification code."));
+
+        if (pendingUser.getCreatedAt().isBefore(OffsetDateTime.now().minusMinutes(15)))
+        {
+            pendingUserRepository.delete(pendingUser);
+            throw new VerificationCodeExpiredException("Verification code expired. Please register again.");
+        }
 
         User user = User.builder()
                 .username(pendingUser.getUsername())
@@ -86,13 +94,9 @@ public class AuthService {
         String identifier = (request.getEmail() != null && !request.getEmail().isBlank())
                 ? request.getEmail()
                 : request.getUsername();
-        try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(identifier, request.getPassword()));
-            log.info("Authentication successful for identifier: {}", identifier);
-        } catch (AuthenticationException e) {
-            log.warn("Authentication failed for identifier {}: {}", identifier, e.getMessage());
-            throw new IllegalArgumentException("Invalid credentials.", e);
-        }
+        
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(identifier, request.getPassword()));
+        log.info("Authentication successful for identifier: {}", identifier);
 
         var user = userRepository.findByEmail(identifier)
                 .or(() -> userRepository.findByUsername(identifier))
@@ -119,7 +123,7 @@ public class AuthService {
             message.setSubject(subject);
             message.setText(text);
                 log.info("Verification email content: {}", text);
-            mailSender.send(message);
+            //mailSender.send(message);
             log.info("Verification email sent to: {}", toEmail);
         } catch (MailException e) {
             log.error("Failed to send verification email to {}: {}", toEmail, e.getMessage());

@@ -18,7 +18,7 @@ This project provides a basic authentication API built with Spring Boot, designe
 *   Spring Data JPA
 *   Spring Mail Sender
 *   PostgreSQL
-*   JJwt (Java JWT library)
+*   JJwt
 *   Maven
 
 ## Database Schema
@@ -101,13 +101,18 @@ graph LR;
   "password": "P@ssw0rd!"
 }
 ```
-- Success Response (200):
+- Success Response (Email Sent - 200):
 ```json
-"Registration successful. Please check your email for verification link."
+{
+  "message": "Registration successful. Please check your email for verification link.",
+}
 ```
-- Error Response (400):
+- Error Response (400 - e.g., duplicate email/username):
 ```json
-"Email already in use"
+{
+  "code": "BAD_REQUEST",
+  "message": "Email already in use"
+}
 ```
 
 #### GET /api/auth/verify?code={verificationCode}
@@ -150,7 +155,7 @@ graph LR;
 ```
 #### Bash Command to Test login/register
 ```bash
-curl -X POST https://tdl-auth-api-1.onrender.com/api/auth/login/register -H "Content-Type: application/json" -d '{
+curl -X POST https://tdl-auth-api-1.onrender.com/api/auth/login -H "Content-Type: application/json" -d '{
   "email": "johndoe@email.com",
   "username": "johndoe",
   "password": "P@ssw0rd!"
@@ -167,11 +172,11 @@ curl -X POST https://tdl-auth-api-1.onrender.com/api/auth/login/register -H "Con
    spring.datasource.url=jdbc:postgresql://localhost:5432/your_db_name?currentSchema=todo
    spring.datasource.username=your_db_user
    spring.datasource.password=your_db_password
-   spring.jpa.hibernate.ddl-auto=validate # Or update/none as needed
-
+   spring.jpa.hibernate.ddl-auto=validate
+   
    # Email Configuration
    spring.mail.host=your_smtp_host
-   spring.mail.port=587 # Or your port
+   spring.mail.port=587
    spring.mail.username=your_email_username
    spring.mail.password=your_email_password
    spring.mail.properties.mail.smtp.auth=true
