@@ -1,4 +1,3 @@
--- Active: 1741952589919@@127.0.0.1@5431@todo_list
 -- Function: todo.retrieve_tasks_modified_since_in_jsonb
 --
 -- Description:
@@ -41,14 +40,7 @@
 --     - Includes deleted_at field to allow clients to handle task deletions.
 --     - Updates last_sync for all returned tasks to ensure consistency.
 --
--- -- Example Usage:
--- UPDATE todo.tasks 
--- SET description = 'Milk, bread, eggs, poison, Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', 
---     updated_at = NOW(), 
---     last_sync = NOW(),
---     status = 'completed' 
--- WHERE task_id = '019641ae-cc43-7113-b970-f62b9bd7d3f7';
-
+-- Example Usage:
 --SELECT * FROM todo.retrieve_tasks_modified_since_in_jsonb('01959f92-0d81-78ab-9c17-c180be5d9a37', NOW() + '1 hour'::interval);
 
 
