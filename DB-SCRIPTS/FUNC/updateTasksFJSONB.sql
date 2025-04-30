@@ -1,4 +1,3 @@
--- Active: 1741952589919@@127.0.0.1@5431@todo_list
 -- Function: todo.update_tasks_from_jsonb
 -- Purpose: Updates tasks in the todo.tasks table based on the provided JSONB input.
 -- Parameters:
