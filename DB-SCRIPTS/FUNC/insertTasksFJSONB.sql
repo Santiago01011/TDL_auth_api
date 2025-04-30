@@ -59,35 +59,6 @@ Example Usage:
         ]}'::JSONB
     );
 */
-
--- SELECT * FROM todo.insert_tasks_from_jsonb(
---         '123e4567-e89b-12d3-a456-426614174000',
---         '{"data": [
---             [null, null, "old_task_1", "Task 1", "Description 1", null, "pending", null, null],
---             [null, null, "old_task_2", "Task 2", "Description 2", null, "invalid_status", null, null]
---         ]}'::JSONB
---     );
--- SELECT * FROM todo.insert_tasks_from_jsonb(
---     '01959f92-0d81-78ab-9c17-c180be5d9a37',
---   '{"data" : [ 
---         [ null, null, "01962737-157e-746b-bf30-cf7fb868e621", "Test Task", "This is a test task", "cloud", "prending", null, "2007-12-03T10:15:30+01:00" ], 
---         [
---             "01959f92-f4a8-797f-8917-a1023364bc4d",
---             "test_folder",
---             "0196496d-114b-7ca4-9318-f8fa22855d90",
---             "Test Task",
---             "This is a test task to check permissions",
---             "cloud",
---             "2025-04-18T15:05:25.735954",
---             "pending",
---             "2025-03-20T10:00",
---             "2025-04-18T15:03:26.795775"
---         ],
---         [ null, null, "old_task_2", "Task 2", "Description 2", null, "invalid_status", null, null ] ],
---     "last_sync": "2025-04-16T20:22:23.582849700-03:00"
---     }'::jsonb
--- );
-
 CREATE OR REPLACE FUNCTION todo.insert_tasks_from_jsonb(
     p_user_id UUID,
     p_tasks_json JSONB
