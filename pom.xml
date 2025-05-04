@@ -139,12 +139,37 @@
 				<artifactId>azure-functions-maven-plugin</artifactId>
 				<version>1.13.0</version>
 				<configuration>
-					<appName>${env.AZURE_FUNCTIONAPP_NAME}</appName>
+					<resourceGroup>TrashTDL</resourceGroup> 
+					<appName>TrashTDLauth</appName> 
+					<region>Brazil South </region>
+					
 					<runtime>
 						<os>linux</os>
-						<javaVersion>Java_11</javaVersion>
+						<javaVersion>21</javaVersion>
 					</runtime>
+					<appSettings>
+						<property>
+							<name>FUNCTIONS_EXTENSION_VERSION</name>
+							<value>~4</value>
+						</property>
+						<property>
+							<name>FUNCTIONS_WORKER_RUNTIME</name>
+							<value>java</value>
+						</property>
+						 <property>
+							<name>MAIN_CLASS</name>
+							<value>com.ToDoList.auth.AuthApIwJwtApplication</value> 
+						</property>
+					</appSettings>
 				</configuration>
+				<executions>
+					<execution>
+						<id>package-functions</id>
+						<goals>
+							<goal>package</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

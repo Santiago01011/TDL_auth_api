@@ -20,7 +20,7 @@ public class RegisterFunction {
 
     @FunctionName("register")
     public HttpResponseMessage run(
-        @HttpTrigger(name = "req", methods = {HttpMethod.POST}, authLevel = AuthorizationLevel.ANONYMOUS, route = "api/auth/register")
+        @HttpTrigger(name = "req", methods = {HttpMethod.POST}, authLevel = AuthorizationLevel.ANONYMOUS, route = "auth/register")
         HttpRequestMessage<Optional<String>> request,
         final ExecutionContext context
     ) {

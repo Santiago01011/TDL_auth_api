@@ -21,7 +21,7 @@ public class LoginFunction {
 
     @FunctionName("login")
     public HttpResponseMessage run(
-        @HttpTrigger(name = "req", methods = {HttpMethod.POST}, authLevel = AuthorizationLevel.ANONYMOUS, route = "api/auth/login")
+        @HttpTrigger(name = "req", methods = {HttpMethod.POST}, authLevel = AuthorizationLevel.ANONYMOUS, route = "auth/login")
         HttpRequestMessage<Optional<String>> request,
         final ExecutionContext context
     ) {
