@@ -10,16 +10,24 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_NAME: TrashTDLauth # set this to your function app name on Azure
-  PACKAGE_DIRECTORY: '.' # set this to the directory which contains pom.xml file
-  JAVA_VERSION: '21' # set this to the java version to use
+  AZURE_FUNCTIONAPP_NAME: TrashTDLauth
+  PACKAGE_DIRECTORY: '.'
+  JAVA_VERSION: '21'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+      SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}
+      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+      APP_URL: ${{ secrets.APP_URL }}
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: 'Checkout GitHub Action'
