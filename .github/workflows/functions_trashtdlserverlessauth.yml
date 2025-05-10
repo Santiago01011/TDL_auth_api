@@ -17,14 +17,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    env:
-      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-      SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-      SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-      SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}
-      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
-      APP_URL: ${{ secrets.APP_URL }}
+
     permissions:
       id-token: write
       contents: read
@@ -55,16 +48,3 @@ jobs:
           app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           slot-name: 'Production'
           package: '${{ github.workspace }}/target/azure-functions/${{ env.AZURE_FUNCTIONAPP_NAME }}'
-          app-settings: |
-            {
-              "SPRING_DATASOURCE_URL": "${{ secrets.SPRING_DATASOURCE_URL }}",
-              "SPRING_DATASOURCE_USERNAME": "${{ secrets.SPRING_DATASOURCE_USERNAME }}",
-              "SPRING_DATASOURCE_PASSWORD": "${{ secrets.SPRING_DATASOURCE_PASSWORD }}",
-              "JWT_SECRET_KEY": "${{ secrets.JWT_SECRET_KEY }}",
-              "SUPPORT_EMAIL": "${{ secrets.SUPPORT_EMAIL }}",
-              "APP_PASSWORD": "${{ secrets.APP_PASSWORD }}",
-              "APP_URL": "${{ secrets.APP_URL }}",
-              "FUNCTIONS_EXTENSION_VERSION": "~4",
-              "FUNCTIONS_WORKER_RUNTIME": "java"
-            }
-
