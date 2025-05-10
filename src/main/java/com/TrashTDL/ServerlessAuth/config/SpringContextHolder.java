@@ -15,6 +15,8 @@ public class SpringContextHolder {
         if (context == null) {
             synchronized (lock) {
                 if (context == null) {
+                    // log JDBC URL
+                    System.out.println("JDBC URL: " + System.getenv("SPRING_DATASOURCE_URL"));
                     Map<String, Object> props = new HashMap<>();
                     props.put("spring.datasource.url", System.getenv("SPRING_DATASOURCE_URL"));
                     props.put("spring.datasource.username", System.getenv("SPRING_DATASOURCE_USERNAME"));
