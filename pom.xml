@@ -146,6 +146,16 @@
 						<os>linux</os>
 						<javaVersion>21</javaVersion>
 					</runtime>
+					<appSettings>
+						<property>
+							<name>FUNCTIONS_EXTENSION_VERSION</name>
+							<value>~4</value>
+						</property>
+						<property>
+							<name>FUNCTIONS_WORKER_RUNTIME</name>
+							<value>java</value>
+						</property>
+					</appSettings>
 				</configuration>
 				<executions>
 					<execution>
