@@ -17,9 +17,17 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+      SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+      SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}
+      APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
+      APP_URL: ${{ secrets.APP_URL }}
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: 'Checkout GitHub Action'
@@ -27,29 +35,23 @@ jobs:
 
       - name: Setup Java Sdk ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v1
-        with: |+
+        with:
           java-version: ${{ env.JAVA_VERSION }}
 
-      - name: 'Restore Project Dependencies Using Mvn'
-        shell: pwsh
-        run: |+
-          pushd './${{ env.PACKAGE_DIRECTORY }}'
-          mvn clean package
-          popd
-      
+      - name: 'Build with Maven and Package Functions'
+        run: mvn clean package azure-functions:package -DskipTests
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_8689EDA51A9D46D1BAA7088531B5CC26 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_128EAB608BE54595BD62DC95DCFA2770 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F1C509306DF8443EB8B85CE2C6AA6299 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_4D8795C01B4944318AEF939CEE549D71 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_BEBA753D420347188B3AD537781AE745 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F7D0ECF3111C4D09B2DC4BAC792F3E76 }}
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
         id: fa
         with:
-          app-name: 'TrashTDLServerlessAuth'
+          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
           slot-name: 'Production'
-          package: '${{ env.PACKAGE_DIRECTORY }}'
-          respect-pom-xml: true
-          
+          package: '${{ github.workspace }}/target/azure-functions/${{ env.AZURE_FUNCTIONAPP_NAME }}'
