@@ -126,7 +126,7 @@ public class AuthService {
             message.setSubject(subject);
             message.setText(text);
                 log.info("Verification email content: {}", text);
-            //mailSender.send(message);
+            mailSender.send(message);
             log.info("Verification email sent to: {}", toEmail);
         } catch (MailException e) {
             log.error("Failed to send verification email to {}: {}", toEmail, e.getMessage());
