@@ -1,7 +1,8 @@
 package com.TrashTDL.ServerlessAuth.config;
 
 import com.TrashTDL.ServerlessAuth.ServerlessAuthApplication;
-import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 
 public class SpringContextHolder {
@@ -12,7 +13,9 @@ public class SpringContextHolder {
         if (context == null) {
             synchronized (lock) {
                 if (context == null) {
-                    context = SpringApplication.run(ServerlessAuthApplication.class);
+                    context = new SpringApplicationBuilder(ServerlessAuthApplication.class)
+                                    .web(WebApplicationType.NONE)
+                                    .run();
                 }
             }
         }
