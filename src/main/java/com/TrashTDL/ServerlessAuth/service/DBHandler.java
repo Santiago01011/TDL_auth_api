@@ -25,16 +25,33 @@ public class DBHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public SyncResponse syncCommands(UUID userId, List<Command> commands) throws JsonProcessingException, SQLException {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        if (commands == null || commands.isEmpty()) {
+            log.warn("No commands provided for sync for user {}", userId);
+            return SyncResponse.builder()
+                    .success(List.of())
+                    .conflicts(List.of())
+                    .failed(List.of())
+                    .build();
+        }
+        
         log.info("Syncing {} commands for user {}", commands.size(), userId);
         
-        // Convert commands list to JSON string for the database function
-        String commandsJson = objectMapper.writeValueAsString(commands);
-        
-        // Call the PostgreSQL function todo.merge_task_commands
-        String sql = "SELECT todo.merge_task_commands(?, ?::jsonb)";
-        
         try {
+            // Convert commands list to JSON string for the database function
+            String commandsJson = objectMapper.writeValueAsString(commands);
+            log.debug("Commands JSON for user {}: {}", userId, commandsJson);
+            
+            // Call the PostgreSQL function todo.merge_task_commands
+            String sql = "SELECT todo.merge_task_commands(?, ?::jsonb)";
+            
             String resultJson = jdbcTemplate.queryForObject(sql, String.class, userId, commandsJson);
+            
+            if (resultJson == null || resultJson.trim().isEmpty()) {
+                throw new SQLException("Database function returned null or empty result");
+            }
             
             // Parse the result JSON back to SyncResponse
             SyncResponse response = objectMapper.readValue(resultJson, SyncResponse.class);
@@ -46,9 +63,12 @@ public class DBHandler {
                     response.getFailed() != null ? response.getFailed().size() : 0);
             
             return response;
+        } catch (JsonProcessingException e) {
+            log.error("JSON processing error for user {}: {}", userId, e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
-            log.error("Error executing sync for user {}: {}", userId, e.getMessage(), e);
-            throw new SQLException("Database sync operation failed", e);
+            log.error("Database error executing sync for user {}: {}", userId, e.getMessage(), e);
+            throw new SQLException("Database sync operation failed: " + e.getMessage(), e);
         }
     }
 }
