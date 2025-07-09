@@ -1,6 +1,6 @@
-# Auth API with JWT
+# Serverless Auth API with JWT (Azure Functions)
 
-This project provides a basic authentication API built with Spring Boot, designed to handle user registration and login for external applications. It uses JWT (JSON Web Tokens) for session management after successful login.
+This project provides a basic authentication API built with Azure Functions and the Spring Framework, designed to handle user registration and login for external applications. It uses JWT (JSON Web Tokens) for session management after successful login.
 
 ## Features
 
@@ -13,17 +13,18 @@ This project provides a basic authentication API built with Spring Boot, designe
 ## Technologies Used
 
 *   Java 21
-*   Spring Boot 3.4.4
+*   Azure Functions
+*   Spring Framework (leveraged within Azure Functions)
 *   Spring Security
 *   Spring Data JPA
-*   Spring Mail Sender
+*   Java Mail Sender
 *   PostgreSQL
 *   JJwt
 *   Maven
 
 ## Database Schema
 
-The API interacts with a PostgreSQL database (`todo` schema) containing the following tables:
+The API interacts with a Neon PostgreSQL database (`todo` schema) containing the following tables:
 
 ```sql
 CREATE TABLE IF NOT EXISTS todo.users (
@@ -50,7 +51,7 @@ CREATE TABLE todo.pending_users (
 
 ```mermaid
 graph LR;
-    A["Client"]-->|"Initiates Auth"| B["API auth"]
+    A["Client"]-->|"Initiates Auth"| B["Azure Function (auth endpoint)"]
     B<-->|"Handles All Auth Logic"| C["Cloud Database"]
     B-->|"Sends Verification Token"| D["Email Service"]
     D-->|"User Clicks Link"| B
@@ -86,6 +87,8 @@ graph LR;
 
 ## API Endpoints
 
+The following Azure Function HTTP Triggers are exposed (assuming a default route prefix of `api`):
+
 *   `POST /api/auth/register`: Register a new user.
 *   `GET /api/auth/verify`: Verify a user's email address using the code from the verification email.
 *   `POST /api/auth/login`: Authenticate a user and receive a JWT.
@@ -101,11 +104,9 @@ graph LR;
   "password": "P@ssw0rd!"
 }
 ```
-- Success Response (Email Sent - 200):
-```json
-{
-  "message": "Registration successful. Please check your email for verification link.",
-}
+- Success Response (200 - Email Sent, Verification Code Returned):
+```text
+Registration successful. Verification code: <actual-verification-code>
 ```
 - Error Response (400 - e.g., duplicate email/username):
 ```json
@@ -117,12 +118,12 @@ graph LR;
 
 #### GET /api/auth/verify?code={verificationCode}
 - Success Response (200):
-```json
-"Account verified successfully!"
+```text
+User verified successfully. You can now log in.
 ```
-- Error Response (400):
-```json
-"Invalid or expired verification code"
+- Error Response (400 - Invalid Code / 410 - Expired Code):
+```text
+Invalid or expired verification code.
 ```
 
 #### POST /api/auth/login
@@ -153,37 +154,27 @@ graph LR;
 ```json
 "Invalid credentials"
 ```
-#### Bash Command to Test login/register
-```bash
-curl -X POST https://tdl-auth-api-1.onrender.com/api/auth/login -H "Content-Type: application/json" -d '{
-  "email": "johndoe@email.com",
-  "username": "johndoe",
-  "password": "P@ssw0rd!"
-}'
-```
 
 ## Setup
 
-1.  **Database:** Ensure you have a running PostgreSQL instance and run the provided SQL scripts.
-2.  **Configuration:** Update the `src/main/resources/application.properties` file with your PostgreSQL database connection details (URL, username, password) and your email server settings (host, port, username, password).
-
-   ```properties
-   # Database Configuration
-   spring.datasource.url=jdbc:postgresql://localhost:5432/your_db_name?currentSchema=todo
-   spring.datasource.username=your_db_user
-   spring.datasource.password=your_db_password
-   spring.jpa.hibernate.ddl-auto=validate
-   
-   # Email Configuration
-   spring.mail.host=your_smtp_host
-   spring.mail.port=587
-   spring.mail.username=your_email_username
-   spring.mail.password=your_email_password
-   spring.mail.properties.mail.smtp.auth=true
-   spring.mail.properties.mail.smtp.starttls.enable=true
-   ```
-
-3.  **Run:** Execute the application using Maven:
+1.  **Database:** Ensure you have a running PostgreSQL instance and run the provided SQL scripts from the `Database Schema` section.
+2.  **Configuration:**
+    *   **`src/main/resources/application.properties`**: Set the environment variables for the values on this file with your PostgreSQL database connection details and your email server settings. These properties are used by the Spring context within the Azure Functions.
+    
+3.  **Run Locally:**
+    Execute the application using the Azure Functions Maven plugin:
     ```bash
-    mvn spring-boot:run
+    mvn clean package azure-functions:run
     ```
+    The functions will typically be available at `http://localhost:7071/api/...`.
+
+4.  **Deploy to Azure:**
+    You can deploy the functions to Azure using several methods:
+    *   **Azure Functions Maven Plugin:**
+        ```bash
+        mvn azure-functions:deploy
+        ```
+        (Requires configuration in your `pom.xml` for the Azure Function App details).
+    *   **Azure CLI**
+    *   **VS Code Azure Functions Extension**
+    *   **Azure Portal**
