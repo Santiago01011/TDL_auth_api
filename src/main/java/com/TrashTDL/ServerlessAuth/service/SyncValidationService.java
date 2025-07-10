@@ -26,22 +26,30 @@ public class SyncValidationService {
                 continue;
             }
             
-            if (command.getAction() == null || command.getAction().trim().isEmpty()) {
-                errors.add(prefix + "Action is required");
+            // Check for action field (legacy) or type field (new format)
+            String actionOrType = command.getAction();
+            if (actionOrType == null || actionOrType.trim().isEmpty()) {
+                actionOrType = command.getType();
             }
             
-            if (command.getEntityType() == null || command.getEntityType().trim().isEmpty()) {
-                errors.add(prefix + "Entity type is required");
+            if (actionOrType == null || actionOrType.trim().isEmpty()) {
+                errors.add(prefix + "Action or type is required");
+            } else {
+                // Validate action/type values
+                if (!isValidAction(actionOrType.trim().toLowerCase()) && !isValidType(actionOrType.trim().toUpperCase())) {
+                    errors.add(prefix + "Invalid action/type: " + actionOrType + ". Must be one of: create, update, delete (or CREATE_TASK, UPDATE_TASK, DELETE_TASK)");
+                }
+            }
+            
+            // Check for entityType field (legacy format) - only required for legacy format
+            if (command.getAction() != null && !command.getAction().trim().isEmpty()) {
+                if (command.getEntityType() == null || command.getEntityType().trim().isEmpty()) {
+                    errors.add(prefix + "Entity type is required");
+                }
             }
             
             if (command.getEntityId() == null || command.getEntityId().trim().isEmpty()) {
                 errors.add(prefix + "Entity ID is required");
-            }
-            
-            // Validate action values (only if action is not empty)
-            String action = command.getAction();
-            if (action != null && !action.trim().isEmpty() && !isValidAction(action.trim().toLowerCase())) {
-                errors.add(prefix + "Invalid action: " + action + ". Must be one of: create, update, delete");
             }
         }
         
@@ -50,5 +58,9 @@ public class SyncValidationService {
     
     private boolean isValidAction(String action) {
         return "create".equals(action) || "update".equals(action) || "delete".equals(action);
+    }
+    
+    private boolean isValidType(String type) {
+        return "CREATE_TASK".equals(type) || "UPDATE_TASK".equals(type) || "DELETE_TASK".equals(type);
     }
 }

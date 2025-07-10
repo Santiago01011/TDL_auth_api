@@ -10,9 +10,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Command {
+    private String commandId;
+    private String entityId;
+    private String type;
+    private Object data;
+    private String timestamp;
+    
+    // Legacy fields for backward compatibility
     private String action;
     private String entityType;
-    private String entityId;
-    private Object data;
     private String clientTimestamp;
 }

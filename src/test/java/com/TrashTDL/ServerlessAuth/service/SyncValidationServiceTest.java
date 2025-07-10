@@ -58,9 +58,12 @@ class SyncValidationServiceTest {
         // Debug: print the errors to understand what's happening
         System.out.println("Validation errors: " + errors);
         
-        assertEquals(3, errors.size()); // Back to 3 errors since we fixed the validation logic
-        assertTrue(errors.stream().anyMatch(error -> error.contains("Action is required")));
-        assertTrue(errors.stream().anyMatch(error -> error.contains("Entity type is required")));
+        // With the new validation logic:
+        // - "Action or type is required" (since both action and type are empty)
+        // - "Entity ID is required" (since entityId is empty)
+        // - "Entity type is required" is only checked when action is not empty (legacy format)
+        assertEquals(2, errors.size());
+        assertTrue(errors.stream().anyMatch(error -> error.contains("Action or type is required")));
         assertTrue(errors.stream().anyMatch(error -> error.contains("Entity ID is required")));
     }
 

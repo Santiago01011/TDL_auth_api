@@ -26,7 +26,7 @@ public class SyncFunction {
                     name = "req",
                     methods = {HttpMethod.POST},
                     authLevel = AuthorizationLevel.ANONYMOUS,
-                    route = "api/v2/sync/commands")
+                    route = "v2/sync/commands")
             HttpRequestMessage<SyncRequest> request,
             final ExecutionContext context) {
 
