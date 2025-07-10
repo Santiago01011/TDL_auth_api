@@ -37,7 +37,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     
-    @SuppressWarnings("unused")
+    //@SuppressWarnings("unused")
     private final JavaMailSender mailSender;
 
     @Value("${application.base-url}")
@@ -114,10 +114,18 @@ public class AuthService {
                 .build();
     }
 
+    @Value("${application.use-mailer}")
+    private boolean useMailer;
+
     private void sendVerificationEmail(String toEmail, String verificationCode) {
         String verificationUrl = baseUrl + "/api/auth/verify?code=" + verificationCode;
         String subject = "Verify Your Email Address";
         String text = "Please click the following link to verify your email address: " + verificationUrl;
+
+        if (!useMailer) {
+            log.info("Email sending disabled. Verification URL would be: {}", verificationUrl);
+            return;
+        }
 
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -125,13 +133,12 @@ public class AuthService {
             message.setTo(toEmail);
             message.setSubject(subject);
             message.setText(text);
-                log.info("Verification email content: {}", text);
+            //log.info("Verification email content: {}", text);
             mailSender.send(message);
             log.info("Verification email sent to: {}", toEmail);
         } catch (MailException e) {
             log.error("Failed to send verification email to {}: {}", toEmail, e.getMessage());
             // TODO: Handle email sending failure, retry and retrive the link as text for manual verification
-        // Deactivated for now to avoid sending emails during testing
         }
     }
 }
